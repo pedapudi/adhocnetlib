@@ -164,7 +164,7 @@ public final class NetworkManager {
 					
 					ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 					ArrayList<BufferItem> receivedBufferItems = (ArrayList<BufferItem>) ois.readObject();
-					newItems = bufferManager.addItemsAndReturnNewItems(receivedBufferItems);
+					newItems = bufferManager.addItems(receivedBufferItems);
 					int newCount = 0;
 					if (newItems != null) {
 						newCount = newItems.size();
@@ -196,7 +196,7 @@ public final class NetworkManager {
 					if (newItems != null) {
 						for (BufferItem item: newItems) {
 							if (receivedDataListener != null) {
-								receivedDataListener.onReceiveData(item.data.bytes);
+								receivedDataListener.onReceiveData(item.payload.bytes);
 							}
 						}
 					}
@@ -288,7 +288,7 @@ public final class NetworkManager {
 						try {
 							ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 							ArrayList<BufferItem> receivedBufferItems = (ArrayList<BufferItem>) ois.readObject();
-							newItems = bufferManager.addItemsAndReturnNewItems(receivedBufferItems);
+							newItems = bufferManager.addItems(receivedBufferItems);
 							int newCount = 0;
 							if (newItems != null) {
 								newCount = newItems.size();
@@ -320,7 +320,7 @@ public final class NetworkManager {
 					if (newItems != null) {
 						for (BufferItem item: newItems) {
 							if (receivedDataListener != null) {
-								receivedDataListener.onReceiveData(item.data.bytes);
+								receivedDataListener.onReceiveData(item.payload.bytes);
 							}
 						}
 					}
@@ -445,9 +445,7 @@ public final class NetworkManager {
 	
 	public boolean sendData(byte[] data, long ttl) {
 		if (!checkIfStarted()) return false;
-		boolean result =  bufferManager.createNewItem(data, ttl, uniqueID);
-		//Toast("BufferManager has "+ bufferManager.getBufferSize()+" items.");
-		return result;
+		return (bufferManager.addNewItem(data, ttl, uniqueID) == null ? false : true);
 	}
 
 	public boolean registerCallBackForReceivedData(ReceivedDataListener listener) {

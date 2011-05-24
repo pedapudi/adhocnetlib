@@ -7,7 +7,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StreamCorruptedException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -19,6 +18,7 @@ import java.util.UUID;
 public class BufferManager {
 	
 	public static class Data implements Serializable {
+		private static final long serialVersionUID = 1L;
 		public byte[] bytes = null;
 		public long time = 0;		
 		public Data(byte[] b, long t) {
@@ -28,14 +28,16 @@ public class BufferManager {
 	}
 	
 	public static class BufferItem implements Serializable {
-		public Data data = null;
-		Integer hash = 0;
+		private static final long serialVersionUID = 1L;
+		public Data payload = null;
 		long ttl = 0;
+		/* nodeIDs is a list of destinations that should ultimately 
+		 * have the BufferItem stored when communication takes place
+		 */
 		HashSet<UUID> nodeIDs = new HashSet<UUID>();
 	
 		public BufferItem (byte[] bytes, long ttl, UUID nodeID) {
-			data = new Data(bytes, new Date().getTime());
-			hash = new Integer(data.hashCode());
+			payload = new Data(bytes, new Date().getTime());
 			this.ttl = ttl;
 			nodeIDs.add(nodeID);
 		}
@@ -52,36 +54,30 @@ public class BufferManager {
 			BufferItem item = (BufferItem) ois.readObject();
 			return item;
 		}
+		
+		public int hashCode() {
+			return payload.hashCode();
+		}
 	}
-	
-	//private static BufferManager singleInstance = new BufferManager();
 	
 	private Hashtable<Integer, BufferItem> bufferedItems = new Hashtable<Integer, BufferItem>();
 	
 	public BufferManager() {
+		/* Do nothing by default */
+	}
+	
+	public synchronized BufferItem addNewItem(byte[] bytes, long ttl, UUID nodeID) {
+		return _addItem(new BufferItem(bytes, ttl, nodeID));		
+	}
+	
+	public synchronized BufferItem addItem (BufferItem item) {
+		return _addItem(item);
+	}
 		
-	}
-	
-	public synchronized boolean createNewItem  (byte[] bytes, long ttl, UUID nodeID) {
-		BufferItem newItem = new BufferItem(bytes, ttl, nodeID);
-		return addItem_(newItem);		
-	}
-	
-	public synchronized boolean addItem (BufferItem item) {
-		return addItem_(item);
-	}
-	
-	public synchronized boolean addItems (List<BufferItem> items) {
-		for (BufferItem item: items) {
-			addItem_(item);
-		}		
-		return true;
-	}
-	
-	public synchronized ArrayList<BufferItem> addItemsAndReturnNewItems (Collection<BufferItem> items) {
+	public synchronized ArrayList<BufferItem> addItems (Collection<BufferItem> items) {
 		ArrayList<BufferItem> newItems = new ArrayList<BufferItem>();		
 		for (BufferItem item: items) {
-			if (addItem_(item)) {
+			if (_addItem(item) != null) {
 				newItems.add(item);
 			}
 		}		
@@ -115,17 +111,15 @@ public class BufferManager {
 		return bufferedItems.size();
 	}
 	
-	private boolean addItem_ (BufferItem item) {
-		if (isDuplicate(item)) {
-			// merge the node id list
-			BufferItem oldItem = getDuplicateItem(item);
-			oldItem.nodeIDs.addAll(item.nodeIDs);
-			return false;
+	private BufferItem _addItem (BufferItem item) {
+		BufferItem alreadyExisting = getDuplicateItem(item);
+		if (alreadyExisting != null) {
+			alreadyExisting.nodeIDs.addAll(item.nodeIDs);
+			return null;
 		} else {
-			// add to the items list
-			bufferedItems.put(item.hash,item);
-			return true;
-		}		
+			bufferedItems.put(item.hashCode(), item);
+			return item;
+		}	
 	}
 	
 	private void removeExpiredItems() {
@@ -140,29 +134,10 @@ public class BufferManager {
 	}
 	
 	private boolean isDuplicate (BufferItem item) {
-		return bufferedItems.contains(item.hash);
+		return bufferedItems.contains(item.hashCode());
 	}
 	
 	private BufferItem getDuplicateItem (BufferItem item) {
-		return (BufferItem)bufferedItems.get(item.hash);
+		return (BufferItem) bufferedItems.get(item.hashCode());
 	}
-	
-	/*
-	public static BufferManager getInstance() {
-		return singleInstance;
-	}
-	*/
-	
-	/*public static void serialize (Collection<BufferItem> items, OutputStream out) throws IOException {
-		ObjectOutputStream oos = new ObjectOutputStream(out);
-		for(BufferItem item : items){
-			oos.writeObject(item);
-		}
-	}
-	
-	public static Collection<BufferItem> deserialize (byte[] bytes, InputStream in) {
-		ObjectInputStream ois = new ObjectInputStream(in);
-		BufferItem item = (BufferItem) ois.readObject();
-		return item;
-	}*/
 }

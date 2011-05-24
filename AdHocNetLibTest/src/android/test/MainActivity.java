@@ -1,26 +1,16 @@
 package android.test;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import org.apache.http.conn.util.InetAddressUtils;
-
-import android.adhocnetlib.NetworkManager;
 import android.adhocnetlib.BufferManager.BufferItem;
+import android.adhocnetlib.NetworkManager;
 import android.adhocnetlib.NetworkManager.NetworkStates;
 import android.adhocnetlib.NetworkUtilities;
 import android.adhocnetlib.NetworkUtilities.AdhocClientModeStartListener;
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Color;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -179,7 +169,7 @@ public class MainActivity extends Activity implements OnClickListener {
 							byte[] synByteArray = null;
 							String synStr = "";
 							try {
-								synByteArray = BufferItem.deserialize(socket.getInputStream()).data.bytes;
+								synByteArray = BufferItem.deserialize(socket.getInputStream()).payload.bytes;
 								synStr = new String(synByteArray);
 								Log.d(TAG, "Received " + synStr);
 								Toast("Received " + synStr);
