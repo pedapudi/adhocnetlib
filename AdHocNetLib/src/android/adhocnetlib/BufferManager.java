@@ -40,13 +40,14 @@ public class BufferManager {
         }
         
         public static void serialize (BufferItem item, OutputStream out) 
-        throws IOException {
+                throws IOException {
             ObjectOutputStream oos = new ObjectOutputStream(out);
             oos.writeObject(item);
         }
         
         public static BufferItem deserialize (InputStream in) 
-        throws StreamCorruptedException, IOException, ClassNotFoundException {
+                throws StreamCorruptedException, IOException, 
+                ClassNotFoundException {
             ObjectInputStream ois = new ObjectInputStream(in);
             BufferItem item = (BufferItem) ois.readObject();
             return item;
@@ -97,7 +98,7 @@ public class BufferManager {
         return true;
     }
     
-    public synchronized Collection<BufferItem> getAllItemsForNodeID  (UUID nodeID) {
+    public synchronized Collection<BufferItem> getAllItemsForNodeID (UUID nodeID) {
         ArrayList<BufferItem> filteredItems = new ArrayList<BufferItem>();
         for (BufferItem bufferedItem : bufferedItems.values()) {
             if (nodeID == null || !bufferedItem.nodeIDs.contains(nodeID)) {
@@ -125,7 +126,8 @@ public class BufferManager {
     }
     
     private boolean isDuplicate (Data data) {
-        if (data != null && bufferedItems.contains(new Integer(data.hashCode()))) {
+        if (data != null && 
+                bufferedItems.contains(new Integer(data.hashCode()))) {
             return true;
         }
         return false;

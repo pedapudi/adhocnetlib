@@ -14,7 +14,8 @@ public class NetworkSwitchPolicy {
     public double clientToServerProb;
     public boolean jumpBackToClient;
     
-    public NetworkSwitchPolicy (long dTime, long asTime, long acTime, double prob) {
+    public NetworkSwitchPolicy (long dTime, long asTime, long acTime, 
+            double prob) {
         disabledTime = dTime;
         adhocServerTime = asTime;
         adhocClientTime = acTime;
@@ -22,7 +23,9 @@ public class NetworkSwitchPolicy {
         jumpBackToClient = false;
     }
 
-    public NetworkManager.NetworkStates getNextState(NetworkManager.NetworkStates curState, NetworkManager.NetworkManagerState state) {
+    public NetworkManager.NetworkStates getNextState(
+            NetworkManager.NetworkStates curState, 
+            NetworkManager.NetworkManagerState state) {
         NetworkManager.NetworkStates nextState = curState; 
         Date now = new Date();
         Logd("lastSwitchTime = " + state.lastSwitchTime.getTime());
@@ -44,7 +47,7 @@ public class NetworkSwitchPolicy {
                 nextState = NetworkManager.NetworkStates.ADHOC_CLIENT;
             break;
         case ADHOC_CLIENT:
-            if (now.getTime() - state.lastActivityTime.getTime() > 10000) {                
+            if (now.getTime() - state.lastActivityTime.getTime() > 10000) {
                 if (state.successfullySent) {
                     nextState = NetworkManager.NetworkStates.DISABLED;
                     state.successfullySent = false;

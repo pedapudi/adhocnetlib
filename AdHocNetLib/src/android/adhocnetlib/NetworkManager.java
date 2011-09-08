@@ -25,9 +25,9 @@ import android.widget.Toast;
 public final class NetworkManager {
     
     // ---------------- Enumerations ----------------  
-    public static enum NetworkStates { DISABLED, ADHOC_SERVER, ADHOC_CLIENT };
+    public static enum NetworkStates {DISABLED, ADHOC_SERVER, ADHOC_CLIENT};
     
-    public enum NetworkSwitchModes { AUTOMATIC, MANUAL }
+    public enum NetworkSwitchModes {AUTOMATIC, MANUAL}
 
     // ---------------- Subclasses ----------------    
     
@@ -68,8 +68,10 @@ public final class NetworkManager {
             String message = null;
             try {
                 String wifiIP = netUtils.getIP();
-                serverSocket = new ServerSocket(adhocServerListeningPort, 10, InetAddress.getByName(wifiIP));
-                serverSocket.setSoTimeout((int)(NetworkSwitchPolicy.Default.adhocServerTime - 100));
+                serverSocket = new ServerSocket(adhocServerListeningPort, 
+                        10, InetAddress.getByName(wifiIP));
+                serverSocket.setSoTimeout((int)(NetworkSwitchPolicy.Default
+                        .adhocServerTime - 100));
                 Log.d(TAG, "Started listening.");
                 Toast ("Started listening.");
                 while (state == NetworkStates.ADHOC_SERVER) {
@@ -89,7 +91,9 @@ public final class NetworkManager {
             } finally {
                 try {
                     if (serverSocket != null) {
-                        while(!serverSocket.isClosed()) serverSocket.close();
+                        while(!serverSocket.isClosed()) {
+                            serverSocket.close();
+                        }
                     }
                 } catch (IOException e) {}
             }
@@ -128,14 +132,17 @@ public final class NetworkManager {
             String message = null;
             try {
                 // Receive client.id
-                // Get buffer items that have not been already sent to client.id
+                // Get buffer items that have not been already 
+                // sent to client.id
+
                 // Send server.id and the buffer items
                 // Receive buffer items and add it to the buffer
                 
                 byte[] synByteArray = null;
                 String synStr = "";
                 try {
-                    synByteArray = BufferItem.deserialize(socket.getInputStream()).data.bytes;
+                    synByteArray = BufferItem.deserialize(
+                            socket.getInputStream()).data.bytes;
                     synStr = new String(synByteArray);
                     Toast("Received " + synStr);
                     Log.d(TAG, "Received " + synStr);
@@ -146,7 +153,8 @@ public final class NetworkManager {
                 }
                 
                 try {
-                    BufferItem.serialize(new BufferItem("SYNACK".getBytes(), 20000,
+                    BufferItem.serialize(new BufferItem("SYNACK".getBytes(),
+                            20000,
                             NetworkManager.getInstance().uniqueID), 
                             socket.getOutputStream());
                     Log.d(TAG, "Sent SYNACK");
@@ -159,7 +167,8 @@ public final class NetworkManager {
                 String ackStr = "";
                 byte[] ackByteArray = null;
                 try {
-                    ackByteArray = BufferItem.deserialize(socket.getInputStream()).data.bytes;
+                    ackByteArray = BufferItem.deserialize(
+                            socket.getInputStream()).data.bytes;
                     ackStr = new String(ackByteArray);
                     Toast("Received " + ackStr);
                     Log.d(TAG, "Received " + ackStr);
@@ -234,7 +243,9 @@ public final class NetworkManager {
                     
                     
                         try {
-                            BufferItem.serialize(new BufferItem("ACK".getBytes(), 20000,
+                            BufferItem.serialize(new BufferItem(
+                                    "ACK".getBytes(), 
+                                    20000,
                                     NetworkManager.getInstance().uniqueID), 
                                     socket.getOutputStream());
                             Logd("Sent ACK");

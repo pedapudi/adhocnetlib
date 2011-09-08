@@ -479,8 +479,6 @@ public class NetworkUtilities {
         });
     } 
     
-    
-    
     public static NetworkUtilities getInstance() {
         return instance;
     }
